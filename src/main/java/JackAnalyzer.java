@@ -7,7 +7,7 @@ public class JackAnalyzer {
         File [] files = path.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().endsWith(".jack") && files[i].isFile()) {
-                CompilationEngine compilationEngine = new CompilationEngine(files[i].toString(), files[i].toString().replace(".jack", ".xml"));
+                CompilationEngine compilationEngine = new CompilationEngine(files[i].toString(), files[i].getName() + ".xml");
             }
         }
 
