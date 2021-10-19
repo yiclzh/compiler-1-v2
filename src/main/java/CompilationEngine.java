@@ -8,6 +8,7 @@ public class CompilationEngine {
     BufferedWriter outputXML;
     private HashSet<String> type = new HashSet<>();
     private  HashSet<String> op = new HashSet<>();
+    private HashSet<String> statements = new HashSet<>();
 
     public CompilationEngine(String inputFile, String outputFile) throws Exception {
         jackTokenizer = new JackTokenizer(inputFile);
@@ -23,6 +24,14 @@ public class CompilationEngine {
 
     private String setKeyword(Keyword keyword) {
         return keyword.name().toString().toLowerCase();
+    }
+
+    private void initializeStatements() {
+        statements.add("let");
+        statements.add("do");
+        statements.add("return");
+        statements.add("if");
+        statements.add("while");
     }
 
     private void initializeType() {
@@ -192,32 +201,32 @@ public class CompilationEngine {
     }
 
     private void compileStatements() throws Exception {
+        initializeStatements();
         outputXML.write("<statements>");
-        if (setKeyword(jackTokenizer.keyword()).equals("let")) {
-            compileLet();
-            compileStatements();
-        }
+        while (statements.contains(setKeyword(jackTokenizer.keyword()))) {
+            if (setKeyword(jackTokenizer.keyword()).equals("let")) {
+                compileLet();
+            }
 
-        if (setKeyword(jackTokenizer.keyword()).equals("if")) {
-            compileIf();
-            compileStatements();
-        }
+            if (setKeyword(jackTokenizer.keyword()).equals("if")) {
+                compileIf();
+            }
 
-        if (setKeyword(jackTokenizer.keyword()).equals("while")) {
-            compileWhile();
-            compileStatements();
-        }
+            if (setKeyword(jackTokenizer.keyword()).equals("while")) {
+                compileWhile();
+            }
 
-        if (setKeyword(jackTokenizer.keyword()).equals("do")) {
-            compileDo();
-            compileStatements();
-        }
+            if (setKeyword(jackTokenizer.keyword()).equals("do")) {
+                compileDo();
+            }
 
-        if (setKeyword(jackTokenizer.keyword()).equals("return")) {
-            compileReturn();
-            compileStatements();
+            if (setKeyword(jackTokenizer.keyword()).equals("return")) {
+                compileReturn();
+            }
         }
         outputXML.write("</statements>");
+
+
     }
 
     private void compileLet() throws Exception {
@@ -322,9 +331,25 @@ public class CompilationEngine {
         outputXML.write("<expression>");
         compileTerm();
         while (op.contains(jackTokenizer.getTokenStringOriginalInput())) {
-            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-            jackTokenizer.advance();
-            compileTerm();
+            if (jackTokenizer.getTokenStringOriginalInput().equals("<")) {
+                outputXML.write("<symbol>" + "&lt;" + "</symbol>");
+                jackTokenizer.advance();
+                compileTerm();
+
+            } else if (jackTokenizer.getTokenStringOriginalInput().equals(">")) {
+                outputXML.write("<symbol>" + "&gt;" + "</symbol>");
+                jackTokenizer.advance();
+                compileTerm();
+            } else if (jackTokenizer.getTokenStringOriginalInput().equals("&")) {
+                outputXML.write("<symbol>" + "&amp;" + "</symbol>");
+                jackTokenizer.advance();
+                compileTerm();
+            } else {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                jackTokenizer.advance();
+                compileTerm();
+            }
+
         }
         outputXML.write("</expression>");
     }
