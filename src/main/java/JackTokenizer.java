@@ -239,6 +239,7 @@ public class JackTokenizer {
         currentToken = arrayTokens.get(index);
     }
 
+
     public TokenType tokenType() {
         if (keywords.contains(currentToken)) {
             return TokenType.KEYWORD;

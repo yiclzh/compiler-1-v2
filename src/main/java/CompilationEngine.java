@@ -305,11 +305,34 @@ public class CompilationEngine {
 
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("do");
-        compileTerm();
+        compileSubroutineCall();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
 
         outputXML.write("</doStatement>");
+    }
+
+    private void compileSubroutineCall() throws Exception {
+        outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        jackTokenizer.advance();
+        if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
+            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+            eat("(");
+            compileExpressionList();
+            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+            eat(")");
+        }
+        if (jackTokenizer.getTokenStringOriginalInput().equals(".")) {
+            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+            eat(".");
+            outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            jackTokenizer.advance();
+            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+            eat("(");
+            compileExpressionList();
+            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+            eat(")");
+        }
     }
 
     private void compileReturn() throws Exception {
@@ -325,6 +348,7 @@ public class CompilationEngine {
 
         outputXML.write("</returnStatement>");
     }
+
 
     private void compileExpression() throws Exception {
         initializeOp();
@@ -356,6 +380,40 @@ public class CompilationEngine {
 
     private void compileTerm() throws Exception {
         outputXML.write("<term>");
+        if (jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
+            outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            jackTokenizer.advance();
+            String nextToken = jackTokenizer.getTokenStringOriginalInput();
+
+            if (nextToken.equals("[")) {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat("[");
+                compileExpression();
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat("]");
+            }
+
+            if (nextToken.equals("(")) {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat("(");
+                compileExpressionList();
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat(")");
+            }
+            if (nextToken.equals(".")) {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat(".");
+                outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+                jackTokenizer.advance();
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat("(");
+                compileExpressionList();
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat(")");
+            }
+
+        }
+
 
         if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
@@ -372,41 +430,16 @@ public class CompilationEngine {
         } else if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
             jackTokenizer.advance();
-        } else if (jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
-            outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
-            jackTokenizer.advance();
-            String nextToken = jackTokenizer.getTokenStringOriginalInput();
-
-            if (nextToken.equals("[")) {
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat("[");
-                compileExpression();
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat("]");
-            } else if (nextToken.equals("(")) {
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat("(");
-                compileExpressionList();
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat(")");
-            } else if (nextToken.equals(".")) {
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat(".");
-                outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
-                jackTokenizer.advance();
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat("(");
-                compileExpressionList();
-                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-                eat(")");
-            }
-        } else if (jackTokenizer.getTokenStringOriginalInput().equals("-") || jackTokenizer.getTokenStringOriginalInput().equals("~")) {
+        }  else if (jackTokenizer.getTokenStringOriginalInput().equals("-") || jackTokenizer.getTokenStringOriginalInput().equals("~")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             jackTokenizer.advance();
             compileTerm();
         }
 
+
         outputXML.write("</term>");
+
+
 
     }
 
