@@ -454,8 +454,7 @@ public class CompilationEngine {
                 compileExpression();
             }
 
-        }
-        if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
+        }else if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             compileExpression();
             while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");

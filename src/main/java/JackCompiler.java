@@ -1,9 +1,9 @@
 import java.io.File;
 import java.io.IOException;
 
-public class JackAnalyzer {
+public class JackCompiler {
     public static void main(String[] args) throws Exception {
-        File path = new File("//home/clarez/Downloads/nand2tetris/nand2tetris/projects/10/Square");
+        File path = new File("//home/clarez/Downloads/nand2tetris/nand2tetris/projects/10/ArrayTest");
         File [] files = path.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().endsWith(".jack") && files[i].isFile()) {
