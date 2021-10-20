@@ -446,11 +446,22 @@ public class CompilationEngine {
     private void compileExpressionList() throws Exception {
         outputXML.write("<expressionList>");
 
-        compileExpression();
-        while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
-            outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
-            eat(",");
+        if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
             compileExpression();
+            while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat(",");
+                compileExpression();
+            }
+
+        }
+        if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
+            compileExpression();
+            while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
+                outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
+                eat(",");
+                compileExpression();
+            }
         }
 
         outputXML.write("</expressionList>");
