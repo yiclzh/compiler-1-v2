@@ -1,14 +1,8 @@
 public class VariableDef {
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    private String name;
+    private String type;
+    private Kind kind;
+    private int index;
 
     public String getType() {
         return type;
@@ -18,7 +12,6 @@ public class VariableDef {
         this.type = type;
     }
 
-    private String type;
 
     public int getIndex() {
         return index;
@@ -36,7 +29,6 @@ public class VariableDef {
         this.kind = kind;
     }
 
-    private Kind kind;
-    private int index;
+
 
 }
