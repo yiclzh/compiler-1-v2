@@ -273,11 +273,13 @@ public class CompilationEngine {
     }
 
     private void compileLet() throws Exception {
+        String name;
         outputXML.write("<letStatement>");
 
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("let");
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        name = jackTokenizer.identifier();
         jackTokenizer.advance();
         if (jackTokenizer.getTokenStringOriginalInput().equals("[")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
