@@ -9,6 +9,8 @@ public class CompilationEngine {
     private HashSet<String> type = new HashSet<>();
     private  HashSet<String> op = new HashSet<>();
     private HashSet<String> statements = new HashSet<>();
+    SymbolTable classLevelSymbolTable = new SymbolTable();
+    SymbolTable subroutineLevelSymbolTable = new SymbolTable();
 
     public CompilationEngine(String inputFile, String outputFile) throws Exception {
         jackTokenizer = new JackTokenizer(inputFile);
@@ -86,32 +88,51 @@ public class CompilationEngine {
     }
 
     private void compileClassVarDec() throws Exception {
+        String name;
+        String varType;
+        Kind varKind;
         initializeType();
         outputXML.write("<classVarDec>");
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+        if (setKeyword(jackTokenizer.keyword()).equals("field")) {
+            varKind = Kind.FIELD;
+        }else {
+            varKind = Kind.STATIC;
+        }
         jackTokenizer.advance();
         if (type.contains(jackTokenizer.getTokenStringOriginalInput())) {
+            varType = setKeyword(jackTokenizer.keyword());
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         } else {
+            varType = jackTokenizer.identifier();
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
         }
         jackTokenizer.advance();
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        name = jackTokenizer.identifier();
         jackTokenizer.advance();
+
+        classLevelSymbolTable.define(name, varType, varKind);
+
         while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(",");
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            classLevelSymbolTable.define(jackTokenizer.identifier(), varType, varKind);
             jackTokenizer.advance();
 
         }
+        System.out.println(classLevelSymbolTable.toString());
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
         outputXML.write("</classVarDec>");
 
+
     }
 
     private void compileSubroutine() throws Exception {
+        subroutineLevelSymbolTable = new SymbolTable();
+        subroutineLevelSymbolTable.startSubroutine();
         initializeType();
         outputXML.write("<subroutineDec>");
         if (jackTokenizer.getTokenStringOriginalInput().equals("constructor") || jackTokenizer.getTokenStringOriginalInput().equals("function") ||
@@ -139,23 +160,32 @@ public class CompilationEngine {
     }
 
     private void compileParameterList() throws Exception {
+        String parameterType;
+        String name;
         initializeType();
         outputXML.write("<parameterList>");
         if (type.contains(jackTokenizer.getTokenStringOriginalInput())) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+            parameterType = setKeyword(jackTokenizer.keyword());
             jackTokenizer.advance();
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            name = jackTokenizer.identifier();
             jackTokenizer.advance();
+            subroutineLevelSymbolTable.define(name, parameterType, Kind.ARG);
             while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat(",");
                 outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+                parameterType = setKeyword(jackTokenizer.keyword());
                 jackTokenizer.advance();
                 outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+                name = jackTokenizer.identifier();
                 jackTokenizer.advance();
+                subroutineLevelSymbolTable.define(name, parameterType, Kind.ARG);
 
             }
         }
+        System.out.println(subroutineLevelSymbolTable);
         outputXML.write("</parameterList>");
     }
 
@@ -174,6 +204,9 @@ public class CompilationEngine {
     }
 
     private void compileVarDec() throws Exception {
+        String name;
+        String varDecType;
+
         initializeType();
         outputXML.write("<varDec>");
 
@@ -181,21 +214,31 @@ public class CompilationEngine {
         eat("var");
         if(type.contains(jackTokenizer.getTokenStringOriginalInput())) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+            varDecType = setKeyword(jackTokenizer.keyword());
         } else {
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            varDecType = jackTokenizer.identifier();
         }
         jackTokenizer.advance();
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        name = jackTokenizer.identifier();
         jackTokenizer.advance();
+
+        subroutineLevelSymbolTable.define(name, varDecType, Kind.VAR);
+
         while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(",");
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            name = jackTokenizer.identifier();
             jackTokenizer.advance();
+
+            subroutineLevelSymbolTable.define(name, varDecType, Kind.VAR);
         }
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
 
+        System.out.println(subroutineLevelSymbolTable.toString());
 
         outputXML.write("</varDec>");
     }

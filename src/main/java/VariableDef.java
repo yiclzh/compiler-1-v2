@@ -30,5 +30,12 @@ public class VariableDef {
     }
 
 
-
+    @Override
+    public String toString() {
+        return "VariableDef{" +
+                "type='" + type + '\'' +
+                ", kind=" + kind +
+                ", index=" + index +
+                '}';
+    }
 }
