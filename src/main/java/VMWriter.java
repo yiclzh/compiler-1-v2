@@ -27,35 +27,43 @@ public class VMWriter {
     }
 
     public void writePush(Segment segment, int index) throws IOException {
-        vmOutput.write("push " + setSegment(segment) + " " + index);
+        vmOutput.write("push " + setSegment(segment) + " " + index + "\n");
     }
 
     public void writePop(Segment segment, int index) throws IOException {
-        vmOutput.write("pop " + setSegment(segment) + " " + index);
+        vmOutput.write("pop " + setSegment(segment) + " " + index  + "\n");
     }
 
     public void writeArithmetic(Command command) throws IOException {
-        vmOutput.write(setCommand(command));
+        vmOutput.write(setCommand(command) + "\n");
     }
 
     public void writeLabel(String label) throws IOException {
-        vmOutput.write("Label " + label);
+        vmOutput.write("Label " + label + "\n");
     }
 
     public void writeGoto(String label) throws IOException {
-        vmOutput.write("goto " + label);
+        vmOutput.write("goto " + label + "\n");
     }
 
     public void writeIf(String label) throws IOException {
-        vmOutput.write("if-goto " + label);
+        vmOutput.write("if-goto " + label + "\n");
     }
 
     public void writeCall(String name, int nArgs) throws IOException {
-        vmOutput.write("call " + name + " " + nArgs);
+        vmOutput.write("call " + name + " " + nArgs + "\n");
     }
 
     public void writeFunction(String name, int nLocals) throws IOException {
-        vmOutput.write("function " + name + " " + nLocals);
+        vmOutput.write("function " + name + " " + nLocals + "\n");
+    }
+
+    public void writeReturn() throws IOException {
+        vmOutput.write("return" + "\n");
+    }
+
+    public void close() throws IOException {
+        vmOutput.close();
     }
 
 }

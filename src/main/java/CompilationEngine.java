@@ -11,10 +11,18 @@ public class CompilationEngine {
     private HashSet<String> statements = new HashSet<>();
     SymbolTable classLevelSymbolTable = new SymbolTable();
     SymbolTable subroutineLevelSymbolTable = new SymbolTable();
+    VMWriter vmWriter;
+
+    String subroutineName;
+    String subroutineType;
+    String className;
 
     public CompilationEngine(String inputFile, String outputFile) throws Exception {
         jackTokenizer = new JackTokenizer(inputFile);
         outputXML = new BufferedWriter(new FileWriter(outputFile, false));
+
+
+        vmWriter = new VMWriter(outputFile + ".vm");
 
         if (jackTokenizer.hasMoreTokens()) {
             jackTokenizer.advance();
@@ -70,6 +78,7 @@ public class CompilationEngine {
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("class");
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        className = jackTokenizer.identifier();
         jackTokenizer.advance();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
@@ -84,6 +93,7 @@ public class CompilationEngine {
         eat("}");
         outputXML.write("</class>");
         outputXML.close();
+        vmWriter.close();
 
     }
 
@@ -137,9 +147,10 @@ public class CompilationEngine {
         outputXML.write("<subroutineDec>");
         if (jackTokenizer.getTokenStringOriginalInput().equals("constructor") || jackTokenizer.getTokenStringOriginalInput().equals("function") ||
                 jackTokenizer.getTokenStringOriginalInput().equals("method")) {
-            outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+//            outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+            subroutineType = jackTokenizer.getTokenStringOriginalInput();
         } else {
-            outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            subroutineType = null;
         }
         jackTokenizer.advance();
         if (type.contains(jackTokenizer.getTokenStringOriginalInput()) || jackTokenizer.getTokenStringOriginalInput().equals("void")) {
@@ -149,6 +160,12 @@ public class CompilationEngine {
         }
         jackTokenizer.advance();
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        subroutineName = jackTokenizer.identifier();
+
+        if (subroutineType.equals("constructor")) {
+            vmWriter.writeFunction(className + "." + subroutineName, classLevelSymbolTable.fieldIndex);
+        }
+
         jackTokenizer.advance();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("(");
@@ -194,9 +211,32 @@ public class CompilationEngine {
 
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
-        while (setKeyword(jackTokenizer.keyword()).equals("var")) {
-            compileVarDec();
+        if (setKeyword(jackTokenizer.keyword()).equals("var")) {
+            while (setKeyword(jackTokenizer.keyword()).equals("var")) {
+                compileVarDec();
+            }
+
+            if (subroutineType.equals("function")) {
+                vmWriter.writeFunction(className + "." + subroutineName, subroutineLevelSymbolTable.varIndex);
+            }
+            if (subroutineType.equals("method")) {
+                vmWriter.writeFunction(className + "." + subroutineName, subroutineLevelSymbolTable.varIndex);
+                vmWriter.writePop(Segment.ARG, 0);
+                vmWriter.writePop(Segment.POINTER, 0);
+            }
+
+        } else {
+            if (subroutineType.equals("method")) {
+                vmWriter.writeFunction(className + "." + subroutineName, 0);
+                vmWriter.writePush(Segment.ARG, 0);
+                vmWriter.writePop(Segment.POINTER, 0);
+            }
+            if (subroutineType.equals("function")) {
+                vmWriter.writeFunction(className + "." +subroutineName, 0);
+            }
         }
+
+
         compileStatements();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
