@@ -35,7 +35,13 @@ public class VMWriter {
     }
 
     public void writeArithmetic(Command command) throws IOException {
-        vmOutput.write(setCommand(command) + "\n");
+        if (command.equals(Command.MULT)) {
+            writeCall("Math.multiply", 2);
+        } else if (command.equals(Command.DIVIDE)) {
+            writeCall("Math.divide", 2);
+        } else {
+            vmOutput.write(setCommand(command) + "\n");
+        }
     }
 
     public void writeLabel(String label) throws IOException {

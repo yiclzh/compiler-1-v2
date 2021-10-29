@@ -16,6 +16,10 @@ public class CompilationEngine {
     String subroutineName;
     String subroutineType;
     String className;
+    int ifConst = 0;
+    int whileConst = 0;
+    int nSubArgs = -1;
+    boolean isVoidSubroutine = false;
 
     public CompilationEngine(String inputFile, String outputFile) throws Exception {
         jackTokenizer = new JackTokenizer(inputFile);
@@ -60,6 +64,11 @@ public class CompilationEngine {
         op.add("<");
         op.add(">");
         op.add("=");
+    }
+
+
+    private int getIntValueOfString(char c) {
+
     }
 
     private void eat(String targetString) throws Exception {
@@ -155,6 +164,9 @@ public class CompilationEngine {
         jackTokenizer.advance();
         if (type.contains(jackTokenizer.getTokenStringOriginalInput()) || jackTokenizer.getTokenStringOriginalInput().equals("void")) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
+            if (jackTokenizer.getTokenStringOriginalInput().equals("void")) {
+                isVoidSubroutine = true;
+            }
         } else {
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
         }
@@ -188,6 +200,9 @@ public class CompilationEngine {
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
             name = jackTokenizer.identifier();
             jackTokenizer.advance();
+            if (subroutineType.equals("method")) {
+                subroutineLevelSymbolTable.argIndex = 1;
+            }
             subroutineLevelSymbolTable.define(name, parameterType, Kind.ARG);
             while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
@@ -312,7 +327,101 @@ public class CompilationEngine {
 
     }
 
+//    private void codeWrite(String exp) throws IOException {
+//        Segment segment = Segment.None;
+//        if (isStringNumber(exp)) {
+//            vmWriter.writePush(Segment.CONST, Integer.valueOf(exp));
+//        }
+//        if (subroutineLevelSymbolTable.contains(exp)) {
+//            if (subroutineLevelSymbolTable.kindOf(exp).equals(Kind.ARG)) {
+//                segment = Segment.ARG;
+//            }
+//            if (subroutineLevelSymbolTable.kindOf(exp).equals(Kind.VAR)) {
+//                segment = Segment.LOCAL;
+//            }
+//
+//            vmWriter.writePush(segment, subroutineLevelSymbolTable.indexOf(exp));
+//        }
+
+//        if (classLevelSymbolTable.contains(exp)) {
+//            if (classLevelSymbolTable.kindOf(exp).equals(Kind.STATIC)) {
+//            }
+//
+//            if (exp.startsWith("-") || exp.startsWith("~") && !exp.contains("(")) {
+//                Command command = Command.None;
+//                String[] i = exp.split(String.valueOf(op));
+//                String exp1 = i[1];
+//                String unaryOp = i[0];
+//                codeWrite(exp1);
+//                if (unaryOp.equals("-")) {
+//                    command = Command.NEG;
+//                }
+//                if (unaryOp.equals("~")) {
+//                    command = Command.NOT;
+//                }
+//                vmWriter.writeArithmetic(command);
+//            }
+//
+//            if (exp.contains(op.toString())) {
+//                Command command = Command.None;
+//                String[] i = exp.split(op.toString());
+//                String exp1 = i[0];
+//                String op = i[1];
+//                String exp2 = i[2];
+//                codeWrite(exp1);
+//                codeWrite(exp2);
+//                if (op.trim().equals("+")) { command = Command.ADD; }
+//                if (op.trim().equals("-")) { command = Command.SUB; }
+//                if (op.trim().equals("*")) { command = Command.MULT; }
+//                if (op.trim().equals("/")) { command = Command.DIVIDE; }
+//                if (op.trim().equals("&")) { command = Command.AND; }
+//                if (op.trim().equals("|")) { command = Command.OR; }
+//                if (op.trim().equals("<")) { command = Command.LT; }
+//                if (op.trim().equals(">")) { command = Command.GT; }
+//                if (op.trim().equals("=")) { command = Command.EQ; }
+//                vmWriter.writeArithmetic(command);
+//            }
+//            if ()
+//
+//        }        segment = Segment.STATIC;
+//            }
+
+//            if (classLevelSymbolTable.kindOf(exp).equals(Kind.FIELD)) {
+//                segment = Segment.THIS;
+//            }
+//
+//            vmWriter.writePush(segment, subroutineLevelSymbolTable.indexOf(exp));
+
+
+    private static boolean isStringNumber(String n) {
+        try {
+            int i = Integer.parseInt(n);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private Segment kindOfToSegment(Kind kind) {
+        if (kind.equals(Kind.ARG)) {
+            return Segment.ARG;
+        }
+        if (kind.equals(Kind.STATIC)) {
+            return Segment.STATIC;
+        }
+        if (kind.equals(Kind.VAR)) {
+            return Segment.LOCAL;
+        }
+        if (kind.equals(Kind.FIELD)) {
+            return Segment.THIS;
+        } else {
+            return Segment.None;
+        }
+    }
+
+
     private void compileLet() throws Exception {
+        boolean isArray = false;
         String name;
         outputXML.write("<letStatement>");
 
@@ -322,15 +431,41 @@ public class CompilationEngine {
         name = jackTokenizer.identifier();
         jackTokenizer.advance();
         if (jackTokenizer.getTokenStringOriginalInput().equals("[")) {
+            isArray = true;
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("[");
             compileExpression();
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("]");
+            if (subroutineLevelSymbolTable.contains(name)) {
+                vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
+            }
+            if (classLevelSymbolTable.contains(name)) {
+                vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+            }
+            vmWriter.writeArithmetic(Command.ADD);
+
         }
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("=");
         compileExpression();
+        if (isArray == true) {
+            //pop temp 0
+            //pop pointer 0
+            //push temp 0
+            //pop that 0
+            vmWriter.writePop(Segment.TEMP, 0);
+            vmWriter.writePop(Segment.POINTER, 0);
+            vmWriter.writePush(Segment.TEMP, 0);
+            vmWriter.writePop(Segment.THAT, 0);
+        } else {
+            if (subroutineLevelSymbolTable.contains(name)) {
+                vmWriter.writePop(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
+            }
+            if (classLevelSymbolTable.contains(name)) {
+                vmWriter.writePop(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+            }
+        }
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
 
@@ -345,13 +480,20 @@ public class CompilationEngine {
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("(");
         compileExpression();
+        vmWriter.writeArithmetic(Command.NOT);
+        vmWriter.writeIf("IF_FALSE" + ifConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
+
+
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
         compileStatements();
+        vmWriter.writeGoto("IF_TRUE" + ifConst);
+        vmWriter.writeLabel("IF_FALSE" + ifConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
+
 
         if (jackTokenizer.getTokenStringOriginalInput().equals("else")) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
@@ -359,9 +501,11 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("{");
             compileStatements();
+            vmWriter.writeLabel("IF_TRUE" + ifConst);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("}");
         }
+        ifConst++;
 
         outputXML.write("</ifStatement>");
     }
@@ -369,18 +513,26 @@ public class CompilationEngine {
     private void compileWhile() throws Exception {
         outputXML.write("<whileStatement>");
 
+        vmWriter.writeLabel("WHILE_TRUE" + whileConst);
+
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("while");
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("(");
         compileExpression();
+        vmWriter.writeArithmetic(Command.NOT);
+        vmWriter.writeIf("WHILE_FALSE" + whileConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
         compileStatements();
+        vmWriter.writeGoto("WHILE_TRUE" + whileConst);
+        vmWriter.writeLabel("WHILE_FALSE" + whileConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
+
+        whileConst++;
 
         outputXML.write("</whileStatement>");
     }
@@ -391,6 +543,7 @@ public class CompilationEngine {
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("do");
         compileSubroutineCall();
+        vmWriter.writePop(Segment.TEMP, 0);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
 
@@ -398,12 +551,18 @@ public class CompilationEngine {
     }
 
     private void compileSubroutineCall() throws Exception {
+
+        String commandFunction = null;
+        String commandName = null;
+
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+        commandName = jackTokenizer.identifier();
         jackTokenizer.advance();
         if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
             compileExpressionList();
+            vmWriter.writeCall(commandName, nSubArgs);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(")");
         }
@@ -411,10 +570,12 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(".");
             outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
+            commandFunction = jackTokenizer.identifier();
             jackTokenizer.advance();
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
             compileExpressionList();
+            vmWriter.writeCall(commandName + "." + commandFunction, nSubArgs);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(")");
         }
@@ -428,6 +589,10 @@ public class CompilationEngine {
         if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
             compileExpression();
         }
+        if (isVoidSubroutine = true) {
+            vmWriter.writePush(Segment.CONST, 0);
+        }
+        vmWriter.writeReturn();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
 
@@ -508,9 +673,14 @@ public class CompilationEngine {
             eat(")");
         } else if (jackTokenizer.tokenType().equals(TokenType.INT_CONST)) {
             outputXML.write("<integerConstant>" + jackTokenizer.intVal() + "</integerConstant>");
+            vmWriter.writePush(Segment.CONST, jackTokenizer.intVal());
             jackTokenizer.advance();
         } else if (jackTokenizer.tokenType().equals(TokenType.STRING_CONST)) {
             outputXML.write("<stringConstant>" + jackTokenizer.stringVal() + "</stringConstant>");
+            char[] characters = jackTokenizer.stringVal().toCharArray();
+            vmWriter.writePush(Segment.CONST, characters.length);
+            vmWriter.writeCall("String.new", 1);
+            //adding string,  to the jack keyboard memory map
             jackTokenizer.advance();
         } else if (jackTokenizer.tokenType().equals(TokenType.KEYWORD)) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
@@ -531,12 +701,19 @@ public class CompilationEngine {
     private void compileExpressionList() throws Exception {
         outputXML.write("<expressionList>");
 
+        if (jackTokenizer.getTokenStringOriginalInput().equals(")")) {
+            nSubArgs = 0;
+        } else {
+            nSubArgs = 1;
+        }
+
         if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
             compileExpression();
             while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat(",");
                 compileExpression();
+                nSubArgs++;
             }
 
         }else if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {

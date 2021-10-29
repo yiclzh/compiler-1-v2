@@ -18,6 +18,15 @@ public class SymbolTable {
         symbolTable.clear();
     }
 
+    public boolean contains(String value) {
+        if (symbolTable.contains(value)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     public void define(String name, String type, Kind kind) {
         //if kind = static || field, insert class scope (class-level symbol table)
         //if kind = arg || var, insert subroutine scope (subroutine-level symbol table)

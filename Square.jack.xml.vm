@@ -1,28 +1,145 @@
 function Square.new 3
+call draw 0
+pop temp 0
+push constant 0
+return
 function Square.dispose 0
 push argument 0
 pop pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
 function Square.draw 0
 push argument 0
 pop pointer 0
+call Screen.setColor 1
+pop temp 0
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+return
 function Square.erase 0
 push argument 0
 pop pointer 0
+call Screen.setColor 1
+pop temp 0
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+return
 function Square.incSize 0
 push argument 0
 pop pointer 0
+push constant 254
+push constant 510
+not
+if-goto IF_FALSE0
+call erase 0
+pop temp 0
+push constant 2
+call draw 0
+pop temp 0
+goto IF_TRUE0
+Label IF_FALSE0
+push constant 0
+return
 function Square.decSize 0
 push argument 0
 pop pointer 0
+push constant 2
+not
+if-goto IF_FALSE1
+call erase 0
+pop temp 0
+push constant 2
+call draw 0
+pop temp 0
+goto IF_TRUE1
+Label IF_FALSE1
+push constant 0
+return
 function Square.moveUp 0
 push argument 0
 pop pointer 0
+push constant 1
+not
+if-goto IF_FALSE2
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+push constant 2
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+goto IF_TRUE2
+Label IF_FALSE2
+push constant 0
+return
 function Square.moveDown 0
 push argument 0
 pop pointer 0
+push constant 254
+not
+if-goto IF_FALSE3
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+push constant 2
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+goto IF_TRUE3
+Label IF_FALSE3
+push constant 0
+return
 function Square.moveLeft 0
 push argument 0
 pop pointer 0
+push constant 1
+not
+if-goto IF_FALSE4
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 1
+pop temp 0
+push constant 2
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+goto IF_TRUE4
+Label IF_FALSE4
+push constant 0
+return
 function Square.moveRight 0
 push argument 0
 pop pointer 0
+push constant 510
+not
+if-goto IF_FALSE5
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 4
+pop temp 0
+push constant 2
+call Screen.setColor 1
+pop temp 0
+push constant 1
+call Screen.drawRectangle 1
+pop temp 0
+goto IF_TRUE5
+Label IF_FALSE5
+push constant 0
+return

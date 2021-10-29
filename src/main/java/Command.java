@@ -8,5 +8,7 @@ public enum Command {
     LT,
     AND,
     OR,
-    NOT;
+    NOT,
+    MULT,
+    DIVIDE;
 }
