@@ -114,6 +114,7 @@ public class JackTokenizer {
 
             if (stringStarted == true) {
                 if (nextToken.equals("\"")) {
+                    token.append(currentToken);
                     currentChar = inputString.charAt(i +2);
                     currentToken = Character.toString(currentChar);
                     stringStarted = false;

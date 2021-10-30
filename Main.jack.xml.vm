@@ -1,24 +1,11 @@
 function Main.main 1
+call PongGame.newInstance 0
+pop temp 0
+call PongGame.getInstance 0
+pop local 0
 call game.run 0
 pop temp 0
 call game.dispose 0
 pop temp 0
-push constant 0
-return
-function Main.more 4
-not
-if-goto IF_FALSE0
-push constant 14
-push constant 1
-add
-push constant 2
-pop temp 0
-pop pointer 0
-push temp 0
-pop that 0
-goto IF_TRUE0
-Label IF_FALSE0
-push constant 2
-Label IF_TRUE0
 push constant 0
 return

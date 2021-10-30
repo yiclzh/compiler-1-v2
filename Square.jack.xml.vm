@@ -1,11 +1,13 @@
 function Square.new 3
 call draw 0
 pop temp 0
+push pointer 0
 push constant 0
 return
 function Square.dispose 0
 push argument 0
 pop pointer 0
+push pointer 0
 call Memory.deAlloc 1
 pop temp 0
 push constant 0
@@ -13,6 +15,8 @@ return
 function Square.draw 0
 push argument 0
 pop pointer 0
+push constant 0
+not
 call Screen.setColor 1
 pop temp 0
 call Screen.drawRectangle 4
@@ -22,6 +26,7 @@ return
 function Square.erase 0
 push argument 0
 pop pointer 0
+push constant 0
 call Screen.setColor 1
 pop temp 0
 call Screen.drawRectangle 4
@@ -52,6 +57,7 @@ not
 if-goto IF_FALSE1
 call erase 0
 pop temp 0
+neg
 push constant 2
 call draw 0
 pop temp 0
@@ -65,12 +71,16 @@ pop pointer 0
 push constant 1
 not
 if-goto IF_FALSE2
+push constant 0
 call Screen.setColor 1
 pop temp 0
 push constant 1
 call Screen.drawRectangle 4
 pop temp 0
+neg
 push constant 2
+push constant 0
+not
 call Screen.setColor 1
 pop temp 0
 push constant 1
@@ -86,12 +96,15 @@ pop pointer 0
 push constant 254
 not
 if-goto IF_FALSE3
+push constant 0
 call Screen.setColor 1
 pop temp 0
 push constant 1
 call Screen.drawRectangle 4
 pop temp 0
 push constant 2
+push constant 0
+not
 call Screen.setColor 1
 pop temp 0
 push constant 1
@@ -107,12 +120,16 @@ pop pointer 0
 push constant 1
 not
 if-goto IF_FALSE4
+push constant 0
 call Screen.setColor 1
 pop temp 0
 push constant 1
 call Screen.drawRectangle 1
 pop temp 0
+neg
 push constant 2
+push constant 0
+not
 call Screen.setColor 1
 pop temp 0
 push constant 1
@@ -128,12 +145,15 @@ pop pointer 0
 push constant 510
 not
 if-goto IF_FALSE5
+push constant 0
 call Screen.setColor 1
 pop temp 0
 push constant 1
 call Screen.drawRectangle 4
 pop temp 0
 push constant 2
+push constant 0
+not
 call Screen.setColor 1
 pop temp 0
 push constant 1

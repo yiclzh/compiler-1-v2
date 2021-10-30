@@ -18,8 +18,8 @@ public class SymbolTable {
         symbolTable.clear();
     }
 
-    public boolean contains(String value) {
-        if (symbolTable.contains(value)) {
+    public boolean contains(String key) {
+        if (symbolTable.containsKey(key)) {
             return true;
         } else {
             return false;
