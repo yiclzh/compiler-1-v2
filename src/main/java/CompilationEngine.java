@@ -798,16 +798,6 @@ public class CompilationEngine {
                 eat(")");
             }
 
-            else {
-                if (subroutineLevelSymbolTable.contains(name)) {
-                    vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
-                } else {
-                    if (classLevelSymbolTable.contains(name)) {
-                        vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
-                    }
-                }
-            }
-
 
         }else if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
