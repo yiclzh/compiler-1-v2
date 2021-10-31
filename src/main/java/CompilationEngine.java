@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -559,14 +560,14 @@ public class CompilationEngine {
 
     private void compileIf() throws Exception {
         outputXML.write("<ifStatement>");
-
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("if");
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("(");
         compileExpression();
-        vmWriter.writeArithmetic(Command.NOT);
-        vmWriter.writeIf("IF_FALSE" + ifConst);
+        vmWriter.writeIf("IF_TRUE" + ifConst);
+        vmWriter.writeGoto("IF_FALSE" + ifConst);
+        vmWriter.writeLabel("IF_TRUE" + ifConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
 
@@ -574,7 +575,7 @@ public class CompilationEngine {
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
         compileStatements();
-        vmWriter.writeGoto("IF_TRUE" + ifConst);
+        vmWriter.writeGoto("IF_END" + ifConst);
         vmWriter.writeLabel("IF_FALSE" + ifConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
@@ -586,7 +587,7 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("{");
             compileStatements();
-            vmWriter.writeLabel("IF_TRUE" + ifConst);
+            vmWriter.writeLabel("IF_END" + ifConst);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("}");
         }
