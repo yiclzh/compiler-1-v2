@@ -308,13 +308,13 @@ public class CompilationEngine {
 
     private void compileParameterList() throws Exception {
         if (subroutineType.equals("constructor")) {
-            String parameterType;
-            String name;
-            initializeType();
-            outputXML.write("<parameterList>");
-            if (type.contains(jackTokenizer.getTokenStringOriginalInput())) {
-                outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
-                parameterType = setKeyword(jackTokenizer.keyword());
+            if (type.contains(jackTokenizer.getTokenStringOriginalInput()) || jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
+                String parameterType;
+                String name;
+                initializeType();
+                outputXML.write("<parameterList>");
+
+                parameterType = jackTokenizer.getTokenStringOriginalInput();
                 jackTokenizer.advance();
                 outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
                 name = jackTokenizer.identifier();
@@ -324,7 +324,7 @@ public class CompilationEngine {
                     outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                     eat(",");
                     outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
-                    parameterType = setKeyword(jackTokenizer.keyword());
+                    parameterType = jackTokenizer.getTokenStringOriginalInput();
                     jackTokenizer.advance();
                     outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
                     name = jackTokenizer.identifier();
@@ -332,17 +332,18 @@ public class CompilationEngine {
                     classLevelSymbolTable.define(name, parameterType, Kind.ARG);
 
                 }
+
+                System.out.println(classLevelSymbolTable);
+                outputXML.write("</parameterList>");
             }
-            System.out.println(classLevelSymbolTable);
-            outputXML.write("</parameterList>");
+
         } else {
-            String parameterType;
-            String name;
-            initializeType();
-            outputXML.write("<parameterList>");
-            if (type.contains(jackTokenizer.getTokenStringOriginalInput())) {
-                outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
-                parameterType = setKeyword(jackTokenizer.keyword());
+            if (type.contains(jackTokenizer.getTokenStringOriginalInput()) || jackTokenizer.tokenType().equals(TokenType.IDENTIFIER)) {
+                String parameterType;
+                String name;
+                initializeType();
+
+                parameterType = jackTokenizer.getTokenStringOriginalInput();
                 jackTokenizer.advance();
                 outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
                 name = jackTokenizer.identifier();
@@ -355,7 +356,7 @@ public class CompilationEngine {
                     outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                     eat(",");
                     outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
-                    parameterType = setKeyword(jackTokenizer.keyword());
+                    parameterType = jackTokenizer.getTokenStringOriginalInput();
                     jackTokenizer.advance();
                     outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
                     name = jackTokenizer.identifier();
@@ -363,9 +364,10 @@ public class CompilationEngine {
                     subroutineLevelSymbolTable.define(name, parameterType, Kind.ARG);
 
                 }
+                System.out.println(subroutineLevelSymbolTable);
+                outputXML.write("</parameterList>");
             }
-            System.out.println(subroutineLevelSymbolTable);
-            outputXML.write("</parameterList>");
+
         }
     }
 
