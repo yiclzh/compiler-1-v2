@@ -323,7 +323,6 @@ public class CompilationEngine {
                 while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                     outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                     eat(",");
-                    outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
                     parameterType = jackTokenizer.getTokenStringOriginalInput();
                     jackTokenizer.advance();
                     outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
@@ -355,7 +354,6 @@ public class CompilationEngine {
                 while (jackTokenizer.getTokenStringOriginalInput().equals(",")) {
                     outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                     eat(",");
-                    outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
                     parameterType = jackTokenizer.getTokenStringOriginalInput();
                     jackTokenizer.advance();
                     outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
@@ -542,7 +540,7 @@ public class CompilationEngine {
             //push temp 0
             //pop that 0
             vmWriter.writePop(Segment.TEMP, 0);
-            vmWriter.writePop(Segment.POINTER, 0);
+            vmWriter.writePop(Segment.POINTER, 1);
             vmWriter.writePush(Segment.TEMP, 0);
             vmWriter.writePop(Segment.THAT, 0);
         } else {
@@ -746,15 +744,6 @@ public class CompilationEngine {
             jackTokenizer.advance();
             String nextToken = jackTokenizer.getTokenStringOriginalInput();
 
-            if (subroutineLevelSymbolTable.contains(name)) {
-                isVar = true;
-                vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
-            } else {
-                if (classLevelSymbolTable.contains(name)) {
-                    isVar = true;
-                    vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
-                }
-            }
 
             if (nextToken.equals("[")) {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
@@ -768,9 +757,21 @@ public class CompilationEngine {
                     }
                 }
                 vmWriter.writeArithmetic(Command.ADD);
+                vmWriter.writePop(Segment.POINTER, 1);
+                vmWriter.writePush(Segment.THAT, 0);
 
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat("]");
+            } else {
+                if (subroutineLevelSymbolTable.contains(name)) {
+                    isVar = true;
+                    vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
+                } else {
+                    if (classLevelSymbolTable.contains(name)) {
+                        isVar = true;
+                        vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+                    }
+                }
             }
 
             if (nextToken.equals("(")) {
