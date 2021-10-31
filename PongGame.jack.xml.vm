@@ -20,9 +20,10 @@ push constant 0
 push constant 229
 call Ball.new 6
 pop this 1
+push this 1
 push constant 400
 push constant 0
-call ball.setDestination 2
+call Ball.setDestination 2
 pop temp 0
 push constant 0
 push constant 238
@@ -69,9 +70,11 @@ return
 function PongGame.dispose 0
 push argument 0
 pop pointer 0
-call bat.dispose 0
+push this 0
+call Bat.dispose 0
 pop temp 0
-call ball.dispose 0
+push this 1
+call Ball.dispose 0
 pop temp 0
 push pointer 0
 call Memory.deAlloc 1
@@ -105,7 +108,8 @@ not
 if-goto WHILE_FALSE0
 call Keyboard.keyPressed 0
 pop local 0
-call bat.move 0
+push this 0
+call Bat.move 0
 pop temp 0
 push pointer 0
 call PongGame.moveBall 1
@@ -120,8 +124,9 @@ push constant 130
 eq
 not
 if-goto IF_FALSE0
+push this 0
 push constant 1
-call bat.setDirection 1
+call Bat.setDirection 1
 pop temp 0
 goto IF_TRUE0
 label IF_FALSE0
@@ -130,8 +135,9 @@ push constant 132
 eq
 not
 if-goto IF_FALSE0
+push this 0
 push constant 2
-call bat.setDirection 1
+call Bat.setDirection 1
 pop temp 0
 goto IF_TRUE0
 label IF_FALSE0
@@ -159,7 +165,8 @@ not
 if-goto WHILE_FALSE1
 call Keyboard.keyPressed 0
 pop local 0
-call bat.move 0
+push this 0
+call Bat.move 0
 pop temp 0
 push pointer 0
 call PongGame.moveBall 1
@@ -278,8 +285,9 @@ push this 6
 push constant 2
 sub
 pop this 6
+push this 0
 push this 6
-call bat.setWidth 1
+call Bat.setWidth 1
 pop temp 0
 push this 4
 push constant 1
@@ -296,8 +304,9 @@ goto IF_TRUE6
 label IF_FALSE6
 goto IF_TRUE7
 label IF_FALSE7
+push this 1
 push local 0
-call ball.bounce 1
+call Ball.bounce 1
 pop temp 0
 goto IF_TRUE8
 label IF_FALSE8

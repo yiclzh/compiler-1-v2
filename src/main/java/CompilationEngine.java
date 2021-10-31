@@ -635,12 +635,22 @@ public class CompilationEngine {
 
     private void compileSubroutineCall() throws Exception {
 
+        boolean isVar = false;
         String commandFunction = null;
         String commandName = null;
 
         outputXML.write("<identifier>" + jackTokenizer.identifier() + "</identifier>");
         commandName = jackTokenizer.identifier();
         jackTokenizer.advance();
+        if (subroutineLevelSymbolTable.contains(commandName)) {
+            isVar = true;
+            vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(commandName)), subroutineLevelSymbolTable.indexOf(commandName));
+        } else {
+            if (classLevelSymbolTable.contains(commandName)) {
+                isVar = true;
+                vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(commandName)), classLevelSymbolTable.indexOf(commandName));
+            }
+        }
         if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
@@ -659,7 +669,16 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
             compileExpressionList();
-            vmWriter.writeCall(commandName + "." + commandFunction, nSubArgs);
+            if (isVar ==  true) {
+                if (classLevelSymbolTable.contains(commandName)) {
+                    vmWriter.writeCall(classLevelSymbolTable.typeOf(commandName) + "." + commandFunction, nSubArgs);
+                } else {
+                    vmWriter.writeCall(subroutineLevelSymbolTable.typeOf(commandName) + "." + commandFunction, nSubArgs);
+                }
+
+            } else {
+                vmWriter.writeCall(commandName + "." + commandFunction, nSubArgs);
+            }
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(")");
         }
