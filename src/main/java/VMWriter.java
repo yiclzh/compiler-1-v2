@@ -45,7 +45,7 @@ public class VMWriter {
     }
 
     public void writeLabel(String label) throws IOException {
-        vmOutput.write("Label " + label + "\n");
+        vmOutput.write("label " + label + "\n");
     }
 
     public void writeGoto(String label) throws IOException {
@@ -67,6 +67,7 @@ public class VMWriter {
     public void writeReturn() throws IOException {
         vmOutput.write("return" + "\n");
     }
+
 
     public void close() throws IOException {
         vmOutput.close();

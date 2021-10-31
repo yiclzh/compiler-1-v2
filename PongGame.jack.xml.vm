@@ -65,7 +65,6 @@ pop this 2
 push constant 0
 pop this 5
 push pointer 0
-push constant 0
 return
 function PongGame.dispose 0
 push argument 0
@@ -86,24 +85,21 @@ push constant 0
 return
 function PongGame.getInstance 0
 push static 0
-push constant 0
 return
 function PongGame.run 1
-pop argument 0
+push argument 0
 pop pointer 0
-Label WHILE_TRUE0
+label WHILE_TRUE0
 push this 3
 not
-push this 3
 not
 if-goto WHILE_FALSE0
-Label WHILE_TRUE0
+label WHILE_TRUE0
 push local 0
 push constant 0
 eq
 push this 3
 not
-push this 3
 and
 not
 if-goto WHILE_FALSE0
@@ -111,13 +107,14 @@ call Keyboard.keyPressed 0
 pop local 0
 call bat.move 0
 pop temp 0
-call moveBall 0
+push pointer 0
+call PongGame.moveBall 1
 pop temp 0
 push constant 50
 call Sys.wait 1
 pop temp 0
 goto WHILE_TRUE0
-Label WHILE_FALSE0
+label WHILE_FALSE0
 push local 0
 push constant 130
 eq
@@ -127,7 +124,7 @@ push constant 1
 call bat.setDirection 1
 pop temp 0
 goto IF_TRUE0
-Label IF_FALSE0
+label IF_FALSE0
 push local 0
 push constant 132
 eq
@@ -137,7 +134,7 @@ push constant 2
 call bat.setDirection 1
 pop temp 0
 goto IF_TRUE0
-Label IF_FALSE0
+label IF_FALSE0
 push local 0
 push constant 140
 eq
@@ -147,18 +144,16 @@ push constant 0
 not
 pop this 3
 goto IF_TRUE0
-Label IF_FALSE0
-Label IF_TRUE1
-Label IF_TRUE2
-Label WHILE_TRUE1
-push constant -1
-not
+label IF_FALSE0
+label IF_TRUE1
+label IF_TRUE2
+label WHILE_TRUE1
 push local 0
 push constant 0
 eq
-push this 3
 not
 push this 3
+not
 and
 not
 if-goto WHILE_FALSE1
@@ -166,15 +161,16 @@ call Keyboard.keyPressed 0
 pop local 0
 call bat.move 0
 pop temp 0
-call moveBall 0
+push pointer 0
+call PongGame.moveBall 1
 pop temp 0
 push constant 50
 call Sys.wait 1
 pop temp 0
 goto WHILE_TRUE1
-Label WHILE_FALSE1
+label WHILE_FALSE1
 goto WHILE_TRUE2
-Label WHILE_FALSE2
+label WHILE_FALSE2
 push this 3
 not
 if-goto IF_FALSE3
@@ -207,22 +203,21 @@ pop temp 0
 call Output.printString 1
 pop temp 0
 goto IF_TRUE3
-Label IF_FALSE3
+label IF_FALSE3
 push constant 0
 return
 function PongGame.moveBall 5
-pop argument 0
+push argument 0
 pop pointer 0
 call ball.move 0
 pop this 2
 push this 2
 push constant 0
 gt
-push constant -1
-not
 push this 2
 push this 5
 eq
+not
 and
 not
 if-goto IF_FALSE4
@@ -253,7 +248,6 @@ or
 pop this 3
 push this 3
 not
-push this 3
 not
 if-goto IF_FALSE4
 push local 4
@@ -265,27 +259,24 @@ not
 if-goto IF_FALSE4
 push constant 1
 neg
-push constant 1
 pop local 0
 goto IF_TRUE4
-Label IF_FALSE4
+label IF_FALSE4
 push local 3
 push local 2
 push constant 10
-neg
-push constant 10
+sub
 gt
 not
 if-goto IF_FALSE4
 push constant 1
 pop local 0
 goto IF_TRUE4
-Label IF_FALSE4
-Label IF_TRUE5
+label IF_FALSE4
+label IF_TRUE5
 push this 6
 push constant 2
-neg
-push constant 2
+sub
 pop this 6
 push this 6
 call bat.setWidth 1
@@ -302,13 +293,13 @@ push this 4
 call Output.printInt 1
 pop temp 0
 goto IF_TRUE6
-Label IF_FALSE6
+label IF_FALSE6
 goto IF_TRUE7
-Label IF_FALSE7
+label IF_FALSE7
 push local 0
 call ball.bounce 1
 pop temp 0
 goto IF_TRUE8
-Label IF_FALSE8
+label IF_FALSE8
 push constant 0
 return

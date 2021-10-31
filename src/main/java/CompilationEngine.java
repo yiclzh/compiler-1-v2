@@ -24,7 +24,6 @@ public class CompilationEngine {
     boolean isVoidSubroutine = false;
     char[] characters;
     HashMap<Character, Integer> hackCharacterSet = new HashMap();
-    boolean isUnaryOp = false;
 
     public CompilationEngine(String inputFile, String outputFile) throws Exception {
         jackTokenizer = new JackTokenizer(inputFile);
@@ -263,6 +262,7 @@ public class CompilationEngine {
     }
 
     private void compileSubroutine() throws Exception {
+        isVoidSubroutine = false;
         subroutineLevelSymbolTable = new SymbolTable();
         subroutineLevelSymbolTable.startSubroutine();
         initializeType();
@@ -301,6 +301,7 @@ public class CompilationEngine {
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
         compileSubroutineBody();
+
         outputXML.write("</subroutineDec>" + "\n");
     }
 
@@ -382,7 +383,7 @@ public class CompilationEngine {
             }
             if (subroutineType.equals("method")) {
                 vmWriter.writeFunction(className + "." + subroutineName, subroutineLevelSymbolTable.varIndex);
-                vmWriter.writePop(Segment.ARG, 0);
+                vmWriter.writePush(Segment.ARG, 0);
                 vmWriter.writePop(Segment.POINTER, 0);
             }
 
@@ -644,7 +645,8 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
             compileExpressionList();
-            vmWriter.writeCall(commandName, nSubArgs);
+            vmWriter.writePush(Segment.POINTER, 0);
+            vmWriter.writeCall(className + "." + commandName, nSubArgs+1);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat(")");
         }
@@ -671,21 +673,20 @@ public class CompilationEngine {
         if (!jackTokenizer.tokenType().equals(TokenType.SYMBOL)) {
             compileExpression();
         }
-        if (isVoidSubroutine = true) {
+        if (isVoidSubroutine) {
             vmWriter.writePush(Segment.CONST, 0);
         }
         vmWriter.writeReturn();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(";");
-
         outputXML.write("</returnStatement>");
     }
 
 
     private void compileExpression() throws Exception {
         initializeOp();
-        Command command = Command.None;
         String opString;
+        Command command = Command.None;
         outputXML.write("<expression>");
         compileTerm();
         while (op.contains(jackTokenizer.getTokenStringOriginalInput())) {
@@ -703,7 +704,6 @@ public class CompilationEngine {
             if (opString.trim().equals(">")) { command = Command.GT; }
             if (opString.trim().equals("=")) { command = Command.EQ; }
             vmWriter.writeArithmetic(command);
-
         }
         outputXML.write("</expression>");
     }
@@ -725,9 +725,10 @@ public class CompilationEngine {
                 compileExpression();
                 if (subroutineLevelSymbolTable.contains(name)) {
                     vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
-                }
-                if (classLevelSymbolTable.contains(name)) {
-                    vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+                } else {
+                    if (classLevelSymbolTable.contains(name)) {
+                        vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+                    }
                 }
                 vmWriter.writeArithmetic(Command.ADD);
 
@@ -739,7 +740,8 @@ public class CompilationEngine {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat("(");
                 compileExpressionList();
-                vmWriter.writeCall(name, nSubArgs);
+                vmWriter.writePush(Segment.POINTER, 0);
+                vmWriter.writeCall(className + "." + name, nSubArgs+1);
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat(")");
             }
@@ -756,19 +758,19 @@ public class CompilationEngine {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat(")");
             }
+
             else {
                 if (subroutineLevelSymbolTable.contains(name)) {
                     vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
-                }
-                if (classLevelSymbolTable.contains(name)) {
-                    vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+                } else {
+                    if (classLevelSymbolTable.contains(name)) {
+                        vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
+                    }
                 }
             }
 
-        }
 
-
-        if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
+        }else if (jackTokenizer.getTokenStringOriginalInput().equals("(")) {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("(");
             compileExpression();
@@ -802,8 +804,8 @@ public class CompilationEngine {
             if (jackTokenizer.getTokenStringOriginalInput().equals("null")) {vmWriter.writePush(Segment.CONST, 0);}
             if (jackTokenizer.getTokenStringOriginalInput().equals("this")) {vmWriter.writePush(Segment.POINTER, 0);}
             jackTokenizer.advance();
-        }  else if (jackTokenizer.getTokenStringOriginalInput().equals("-") || jackTokenizer.getTokenStringOriginalInput().equals("~")) {
-            isUnaryOp = true;
+        }
+        else if (jackTokenizer.getTokenStringOriginalInput().equals("-") || jackTokenizer.getTokenStringOriginalInput().equals("~")) {
             Command command = Command.None;
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             if (jackTokenizer.getTokenStringOriginalInput().equals("-")) {
@@ -813,20 +815,8 @@ public class CompilationEngine {
                 command = Command.NOT;
             }
             jackTokenizer.advance();
-            String name = jackTokenizer.getTokenStringOriginalInput();
-            if (subroutineLevelSymbolTable.contains(jackTokenizer.getTokenStringOriginalInput())) {
-                vmWriter.writePush(kindOfToSegment(subroutineLevelSymbolTable.kindOf(name)), subroutineLevelSymbolTable.indexOf(name));
-                vmWriter.writeArithmetic(command);
-            }
-            if (classLevelSymbolTable.contains(jackTokenizer.getTokenStringOriginalInput())) {
-                vmWriter.writePush(kindOfToSegment(classLevelSymbolTable.kindOf(name)), classLevelSymbolTable.indexOf(name));
-            }
-            else {
-                vmWriter.writePush(Segment.CONST, jackTokenizer.intVal());
-            }
-            vmWriter.writeArithmetic(command);
-
             compileTerm();
+            vmWriter.writeArithmetic(command);
         }
 
 
@@ -860,6 +850,7 @@ public class CompilationEngine {
                 outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
                 eat(",");
                 compileExpression();
+                nSubArgs++;
             }
         }
 
