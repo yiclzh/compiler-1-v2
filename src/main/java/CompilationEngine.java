@@ -399,7 +399,8 @@ public class CompilationEngine {
             }
         }
 
-
+        ifConst = 0;
+        whileConst = 0;
         compileStatements();
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
@@ -456,12 +457,10 @@ public class CompilationEngine {
 
             if (setKeyword(jackTokenizer.keyword()).equals("if")) {
                 compileIf();
-                ifConst++;
             }
 
             if (setKeyword(jackTokenizer.keyword()).equals("while")) {
                 compileWhile();
-                whileConst++;
             }
 
             if (setKeyword(jackTokenizer.keyword()).equals("do")) {
@@ -559,27 +558,31 @@ public class CompilationEngine {
     }
 
     private void compileIf() throws Exception {
+        int currentIfConstant = ifConst;
+        ifConst++;
         outputXML.write("<ifStatement>");
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("if");
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("(");
         compileExpression();
-        vmWriter.writeIf("IF_TRUE" + ifConst);
-        vmWriter.writeGoto("IF_FALSE" + ifConst);
-        vmWriter.writeLabel("IF_TRUE" + ifConst);
+        vmWriter.writeIf("IF_TRUE" + currentIfConstant);
+        vmWriter.writeGoto("IF_FALSE" + currentIfConstant);
+        vmWriter.writeLabel("IF_TRUE" + currentIfConstant);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
 
-
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
+
         compileStatements();
-        vmWriter.writeGoto("IF_END" + ifConst);
-        vmWriter.writeLabel("IF_FALSE" + ifConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
 
+        if (jackTokenizer.getTokenStringOriginalInput().equals("else")) {
+            vmWriter.writeGoto("IF_END" + currentIfConstant);
+        }
+        vmWriter.writeLabel("IF_FALSE" + currentIfConstant);
 
         if (jackTokenizer.getTokenStringOriginalInput().equals("else")) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
@@ -587,7 +590,7 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("{");
             compileStatements();
-            vmWriter.writeLabel("IF_END" + ifConst);
+            vmWriter.writeLabel("IF_END" + currentIfConstant);
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("}");
         }
@@ -596,9 +599,11 @@ public class CompilationEngine {
     }
 
     private void compileWhile() throws Exception {
+        final int currentWhile = whileConst;
+        whileConst++;
         outputXML.write("<whileStatement>");
 
-        vmWriter.writeLabel("WHILE_TRUE" + whileConst);
+        vmWriter.writeLabel("WHILE_TRUE" + currentWhile);
 
         outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
         eat("while");
@@ -606,17 +611,17 @@ public class CompilationEngine {
         eat("(");
         compileExpression();
         vmWriter.writeArithmetic(Command.NOT);
-        vmWriter.writeIf("WHILE_FALSE" + whileConst);
+        vmWriter.writeIf("WHILE_FALSE" + currentWhile);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat(")");
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("{");
+
         compileStatements();
-        vmWriter.writeGoto("WHILE_TRUE" + whileConst);
-        vmWriter.writeLabel("WHILE_FALSE" + whileConst);
+        vmWriter.writeGoto("WHILE_TRUE" + currentWhile);
+        vmWriter.writeLabel("WHILE_FALSE" + currentWhile);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
-
         outputXML.write("</whileStatement>");
     }
 
