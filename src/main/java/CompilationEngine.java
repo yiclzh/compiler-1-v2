@@ -455,10 +455,12 @@ public class CompilationEngine {
 
             if (setKeyword(jackTokenizer.keyword()).equals("if")) {
                 compileIf();
+                ifConst++;
             }
 
             if (setKeyword(jackTokenizer.keyword()).equals("while")) {
                 compileWhile();
+                whileConst++;
             }
 
             if (setKeyword(jackTokenizer.keyword()).equals("do")) {
@@ -588,7 +590,6 @@ public class CompilationEngine {
             outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
             eat("}");
         }
-        ifConst++;
 
         outputXML.write("</ifStatement>");
     }
@@ -614,8 +615,6 @@ public class CompilationEngine {
         vmWriter.writeLabel("WHILE_FALSE" + whileConst);
         outputXML.write("<symbol>" + jackTokenizer.symbol() + "</symbol>");
         eat("}");
-
-        whileConst++;
 
         outputXML.write("</whileStatement>");
     }
