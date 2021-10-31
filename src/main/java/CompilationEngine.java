@@ -820,8 +820,6 @@ public class CompilationEngine {
                 vmWriter.writePush(Segment.CONST, p);
                 vmWriter.writeCall("String.appendChar", 2);
             }
-            vmWriter.writeCall("Output.printString", 1);
-            vmWriter.writePop(Segment.TEMP, 0);
             jackTokenizer.advance();
         } else if (keywordConstant.contains(jackTokenizer.getTokenStringOriginalInput())) {
             outputXML.write("<keyword>" + setKeyword(jackTokenizer.keyword()) + "</keyword>");
